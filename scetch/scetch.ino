@@ -1,6 +1,6 @@
 int led = 9;
 int brightness = 0;
-int fadeAmount = 10;
+int fadeAmount = 5;
 char inc[64];
 String last_command;
 bool send = false;
@@ -18,8 +18,9 @@ void loop() {
     Serial.print("You say: ");
     Serial.write(inc);
     Serial.println();
-    last_command = new String(inc);
+//    last_command = new String(inc);
     memset(inc, 0, sizeof(inc) / sizeof(inc[0]));
+    
   }
 
   analogWrite(led, brightness);
@@ -29,3 +30,8 @@ void loop() {
   }
   delay(30);
 }
+
+String parseCommand(String command) {
+  
+}
+
