@@ -2,6 +2,7 @@ int led = 9;
 int brightness = 0;
 int fadeAmount = 10;
 char inc[64];
+String last_command;
 bool send = false;
 // the setup routine runs once when you press reset:
 void setup() {
@@ -17,6 +18,7 @@ void loop() {
     Serial.print("You say: ");
     Serial.write(inc);
     Serial.println();
+    last_command = new String(inc);
     memset(inc, 0, sizeof(inc) / sizeof(inc[0]));
   }
 
