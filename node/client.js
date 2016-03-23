@@ -20,3 +20,10 @@ $('#send').click(function(event) {
     socket.emit('write', text);
     return false;
 });
+
+$('#set').click(function(event) {
+    socket.emit('write', 'set');
+});
+$('#reset').click(function(event) {
+    socket.emit('write', 'rst');
+});

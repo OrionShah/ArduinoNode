@@ -26,9 +26,9 @@ void loop() {
   if (Serial.available() > 0) {
     Serial.readBytes(inc, 63);
 
-    parseCommand(inc);
+    bool chk = parseCommand(inc);
 
-    if (send) {
+    if (send && !chk) {
       Serial.print("You say: ");
       Serial.write(inc);
       Serial.println();  
@@ -77,14 +77,19 @@ void loop() {
   delay(30);
 }
 
-String parseCommand(char cmd[64]) {
+bool parseCommand(char cmd[64]) {
   if (cmd[0] == 's' && cmd[1] == 'e' && cmd[2] == 't') {
     btn_state = !btn_state;
     send = false;
+    return true;
   }
 
   if (cmd[0] == 'r' && cmd[1] == 's' && cmd[2] == 't') {
     send = true;
+    return true;
   }
+
+  return false;
+  
 }
 
