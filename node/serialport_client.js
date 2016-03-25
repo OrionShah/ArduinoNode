@@ -11,7 +11,8 @@ var sp = function () {
         serialPort.list(function (err, ports) {
             var regexp = /Arduino/i;
             ports.forEach(function(port) {
-                if (regexp.test(port.pnpId)) {
+                // console.log(port);
+                if (regexp.test(port.pnpId) || port.vendorId == '0x1a86') {
                     // console.log(port);
                     this.createPort(port.comName);
                     this.createListener();
