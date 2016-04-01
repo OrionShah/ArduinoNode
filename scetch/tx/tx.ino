@@ -5,12 +5,15 @@
 #define TX_PIN 12
 #define LED_PIN 13
 #define R_SPEED 200
+#define BTN_PIN 7
 
 struct BASE_MSG {
-    unsigned int from_id;
-    unsigned int to_id;
-    unsigned int cmd;
+    unsigned short int from_id;
+    unsigned short int to_id;
+    unsigned short int cmd;
 };
+
+int main_security = 0;
 
 int id;
 
@@ -20,6 +23,7 @@ void setup() {
     Serial.begin(9600);
 
     pinMode(LED_PIN,OUTPUT);
+    pinMode(BTN_PIN, INPUT);
 
     vw_set_ptt_inverted(true);
     vw_set_tx_pin(TX_PIN);
@@ -35,28 +39,55 @@ void setup() {
         Serial.println(randNumber);
         EEPROM.write(0, randNumber);
     }
-
+    //sendMessage(str);
     //Serial.print("ID: ");
     //Serial.println(id);
 
 }
 
 void loop () {
-    str = !str;
-    sendMessage(str);
-    digitalWrite(LED_PIN,str);
     checkIncomingData();
-    delay(250);
+    checkButtons();
+    delay(20);
 }
 
 void sendMessage (int cmd) {
     BASE_MSG msg = {id, 0, cmd};
     //Serial.println(msg);
+    Serial.print("Size of msg: ");
+    Serial.println(sizeof(msg));
     vw_send((uint8_t *)&msg, sizeof(msg));
     vw_wait_tx();
+    //digitalWrite(LED_PIN, cmd);
+    Serial.print("Send: ");
+    Serial.println(cmd);
 }
 
 
 void checkIncomingData() {
-    // TODO: реализовать
+    //Serial.println("Checking...");
+    BASE_MSG receivedData;
+    uint8_t msgSize = sizeof(receivedData);
+    if (vw_get_message((uint8_t *)&receivedData, &msgSize)) {
+        parseIncCmd(receivedData.cmd);
+
+        //digitalWrite(LED_PIN, receivedData.cmd);
+        //sendMessage(!receivedData.cmd);
+    }
+}
+
+void parseIncCmd(int cmd) {
+    Serial.print("CMD: ");
+    Serial.println(cmd);
+}
+
+void checkButtons() {
+    int btn_state = digitalRead(BTN_PIN);
+    Serial.print("BTN: ");
+    Serial.println(btn_state);
+
+    if (btn_state > 0) {
+        int cmd = 1 * 10 + main_security;
+        sendMessage(cmd);
+    }
 }
