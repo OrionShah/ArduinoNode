@@ -2,7 +2,7 @@
 #include <nRF24L01.h>
 #include <RF24.h>
 RF24 radio(9, 10); // можно использовать любые
-const uint32_t pipe = 0xF0F1F2F3F1LL; // адрес
+const uint32_t pipe = 7777; // адрес
 byte out[1];
 
 void setup()
@@ -23,9 +23,9 @@ void loop()
   out[0] = 200;
   radio.write(out, 1);
   Serial.println(out[0]);
-  delay(500);
+  delay(250);
   out[0] = 100;
   radio.write(out, 1);
   Serial.println(out[0]);
-  delay(500);
+  delay(250);
 }

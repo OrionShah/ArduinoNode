@@ -2,7 +2,7 @@
 #include <nRF24L01.h>
 #include <RF24.h>
 RF24 radio(9, 10);
-const uint32_t pipe = 0xF0F1F2F3F1LL;
+const uint32_t pipe = 7777;
 
 byte massiv[2];
 
