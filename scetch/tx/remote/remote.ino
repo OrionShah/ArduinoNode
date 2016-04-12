@@ -9,7 +9,6 @@
 #define CSN_PIN 10
 #define CE_PIN 9
 #define LED_PIN 6
-#define LED_ALARM_PIN 2
 #define ADDR_BASE 7777
 #define ADDR_RMT 6666
 //#define R_SPEED 200
@@ -33,7 +32,6 @@ void setup() {
     Serial.begin(9600);
 
     pinMode(LED_PIN,OUTPUT);
-    pinMode(LED_ALARM_PIN, OUTPUT);
     pinMode(BTN_PIN, INPUT);
 
     radio.begin();
@@ -73,9 +71,18 @@ void loop () {
 }
 
 void sendMessage (int zone, int val) {
+//    BASE_MSG msg = {id, 0, cmd};
+    //Serial.println(msg);
+//    Serial.print("Size of msg: ");
+//    Serial.println(sizeof(msg));
+//    vw_send((uint8_t *)&msg, sizeof(msg));
+//    vw_wait_tx();
+    //digitalWrite(LED_PIN, cmd);
+    //radio.writeAckPayload(1, &ok_msg, sizeof(ok_msg));
+    
     int cmd[3];
     cmd[0] = CHK_INT;
-    cmd[1] = zone;
+    cmd[1] = zone; //main security
     cmd[2] = val;
 
     radio.stopListening();
@@ -129,16 +136,6 @@ void parseIncCmd(int zone, int val) {
             digitalWrite(LED_PIN, LOW);
         }
     }
-
-    if (zone == 2) { // двери
-        if (val == 1) {
-            main_alarm = 1;
-            digitalWrite(LED_ALARM_PIN, HIGH);
-        } else {
-            main_alarm = 0;
-            digitalWrite(LED_ALARM_PIN, LOW);
-        }
-    }
 }
 
 void checkButtons() {
@@ -153,6 +150,7 @@ void checkButtons() {
             
             sendMessage(1, !main_security);
             main_security = !main_security;
+            //digitalWrite(LED_PIN, main_security);
         }
     }
 

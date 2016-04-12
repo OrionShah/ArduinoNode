@@ -8,6 +8,7 @@
 #define CSN_PIN 53  // Mega Pin
 #define CE_PIN 40   // Mega Pin
 #define LED_PIN 7
+#define ONE_DOOR_PIN 9
 #define ADDR_BASE 7777
 #define ADDR_RMT 6666
 //#define R_SPEED 200
@@ -32,6 +33,7 @@ void setup() {
     Serial.begin(9600);
 
     pinMode(LED_PIN,OUTPUT);
+    pinMode(ONE_DOOR_PIN, INPUT);
 
     radio.begin();
     radio.setChannel(7);
@@ -70,6 +72,14 @@ void loop() {
 
 void checkCar() {
     // тут проверка датчиков с авто
+    if (main_security) {
+        int door = digitalRead(ONE_DOOR_PIN);
+        if (door != 1 && main_alarm == 0) {
+            main_alarm = 1;
+            sendMessage(2, 1); // 2 - зона дверей, 1 - есть открытая
+            // TODO: локальный звуковой сигнал
+        }
+    }
 }
 
 void sendMessage (int zone, int val) {
@@ -131,6 +141,11 @@ void parseIncCmd(int zone, int val) {
     if (zone == 1) { // охрана
         // Serial.println(main_security);
         main_security = !main_security;
+        if (main_alarm == 1 ) {
+            main_alarm = 0;
+            main_security = 1;
+            sendMessage(2, 0);
+        }
         if (main_security == 1) {
             digitalWrite(LED_PIN, HIGH);
         } else {

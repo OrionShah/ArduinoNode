@@ -5,36 +5,33 @@
 #include <nRF24L01.h>
 #include <RF24.h>
 
-
-#define CSN_PIN 10
-#define CE_PIN 9
-#define LED_PIN 6
-#define LED_ALARM_PIN 2
+#define CSN_PIN 53  // Mega Pin
+#define CE_PIN 40   // Mega Pin
+#define LED_PIN 7
 #define ADDR_BASE 7777
 #define ADDR_RMT 6666
 //#define R_SPEED 200
-#define BTN_PIN 7
+//#define BTN_PIN 7
 #define CHK_INT 777
 
 RF24 radio(CE_PIN, CSN_PIN);
 
+//struct BASE_MSG {
+//    unsigned int from_id;
+//    unsigned int to_id;
+//    unsigned int cmd;
+//};
+
+int id;
 
 int main_security = 0;
 int main_alarm = 0;
 
-int id;
-
-int str = 1;
-
-int btn_state = 0;
-int btn_state_last = 0;
-
 void setup() {
+
     Serial.begin(9600);
 
     pinMode(LED_PIN,OUTPUT);
-    pinMode(LED_ALARM_PIN, OUTPUT);
-    pinMode(BTN_PIN, INPUT);
 
     radio.begin();
     radio.setChannel(7);
@@ -43,7 +40,7 @@ void setup() {
     radio.setDataRate(RF24_250KBPS); // скорость обмена данными RF24_1MBPS или RF24_2MBPS
     radio.setPALevel(RF24_PA_MAX);
 
-    radio.openReadingPipe(1, ADDR_RMT);
+    radio.openReadingPipe(1, ADDR_BASE);
     radio.startListening();
 
     //vw_set_ptt_inverted(true);
@@ -60,58 +57,69 @@ void setup() {
         Serial.println(randNumber);
         EEPROM.write(0, randNumber);
     }
-    //sendMessage(str);
+
     //Serial.print("ID: ");
     //Serial.println(id);
-
 }
 
-void loop () {
+void loop() {
     checkIncomingData();
-    checkButtons();
-    delay(100);
+    checkCar();
+    delay(20);
+}
+
+void checkCar() {
+    // тут проверка датчиков с авто
 }
 
 void sendMessage (int zone, int val) {
+
     int cmd[3];
     cmd[0] = CHK_INT;
     cmd[1] = zone;
     cmd[2] = val;
 
     radio.stopListening();
-    radio.openWritingPipe(ADDR_BASE);
+    radio.openWritingPipe(ADDR_RMT);
     radio.write(cmd, sizeof(cmd));
 
-    radio.openReadingPipe(1, ADDR_RMT);
+    radio.openReadingPipe(1, ADDR_BASE);
     radio.startListening();
 
-    Serial.print("Send: ");
-    Serial.print(cmd[0]);
-    Serial.print(' ');
-    Serial.print(cmd[1]);
-    Serial.print(' ');
-    Serial.println(cmd[2]);
-
-
+    // Serial.print("Send: ");
+    // Serial.print(cmd[0]);
+    // Serial.print(' ');
+    // Serial.print(cmd[1]);
+    // Serial.print(' ');
+    // Serial.println(cmd[2]);
 }
-
 
 void checkIncomingData() {
     int cmd[3];
     if (radio.available()) {
         radio.read(cmd, sizeof(cmd));
         delay(100);
-        // Serial.print("REC: ");
-        // Serial.print(cmd[0]);
-        // Serial.print(' ');
-        // Serial.print(cmd[1]);
-        // Serial.print(' ');
-        // Serial.println(cmd[2]);
+        Serial.print("REC: ");
+        Serial.print(cmd[0]);
+        Serial.print(' ');
+        Serial.print(cmd[1]);
+        Serial.print(' ');
+        Serial.println(cmd[2]);
 
         if (cmd[0] == CHK_INT) {
             parseIncCmd(cmd[1], cmd[2]);
         }
     }
+
+    //Serial.println("Checking...");
+    //BASE_MSG receivedData;
+    //uint8_t msgSize = sizeof(receivedData);
+
+    //if (vw_get_message((uint8_t *)&receivedData, &msgSize)) {
+    //    parseIncCmd(receivedData.cmd);
+        //digitalWrite(LED_PIN, receivedData.cmd);
+        //sendMessage(!receivedData.cmd);
+    //}
 }
 
 void parseIncCmd(int zone, int val) {
@@ -122,38 +130,12 @@ void parseIncCmd(int zone, int val) {
 
     if (zone == 1) { // охрана
         // Serial.println(main_security);
-        main_security = val;
+        main_security = !main_security;
         if (main_security == 1) {
             digitalWrite(LED_PIN, HIGH);
         } else {
             digitalWrite(LED_PIN, LOW);
         }
+        sendMessage(1, main_security);
     }
-
-    if (zone == 2) { // двери
-        if (val == 1) {
-            main_alarm = 1;
-            digitalWrite(LED_ALARM_PIN, HIGH);
-        } else {
-            main_alarm = 0;
-            digitalWrite(LED_ALARM_PIN, LOW);
-        }
-    }
-}
-
-void checkButtons() {
-    btn_state = digitalRead(BTN_PIN);
-
-    if (btn_state != btn_state_last) {
-        btn_state_last = btn_state;
-
-        Serial.print("BTN: ");
-        Serial.println(btn_state);
-        if (btn_state > 0) {
-            
-            sendMessage(1, !main_security);
-            main_security = !main_security;
-        }
-    }
-
 }
