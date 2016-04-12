@@ -13,7 +13,7 @@ void setup()
   radio.begin();
   delay(10);
   radio.setChannel(7);
-  //radio.setRetries(15,15);
+  radio.setRetries(15,15);
   radio.setDataRate(RF24_250KBPS); // RF24_1MBPS или RF24_2MBPS
   radio.setPALevel(RF24_PA_MAX);
   //radio.setAutoAck(1);

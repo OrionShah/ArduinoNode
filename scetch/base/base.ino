@@ -5,8 +5,8 @@
 #include <nRF24L01.h>
 #include <RF24.h>
 
-#define CSN_PIN 10
-#define CE_PIN 9
+#define CSN_PIN 53  // Mega Pin
+#define CE_PIN 40   // Mega Pin
 #define LED_PIN 7
 #define ADDR_BASE 7777
 #define ADDR_RMT 6666
@@ -55,7 +55,7 @@ void setup() {
         int randNumber = random(0, 255);
         Serial.print("NEW RND ID: ");
         Serial.println(randNumber);
-        //EEPROM.write(0, randNumber);
+        EEPROM.write(0, randNumber);
     }
 
     //Serial.print("ID: ");
@@ -64,16 +64,34 @@ void setup() {
 
 void loop() {
     checkIncomingData();
+    checkCar();
     delay(20);
 }
 
-void sendMessage (int cmd) {
-    //BASE_MSG msg = {id, 0, cmd};
-    //Serial.println(msg);
-    //vw_send((uint8_t *)&msg, sizeof(msg));
-    //vw_wait_tx();
-    //digitalWrite(LED_PIN, cmd);
-    //Serial.println("Send");
+void checkCar() {
+    // тут проверка датчиков с авто
+}
+
+void sendMessage (int zone, int val) {
+
+    int cmd[3];
+    cmd[0] = CHK_INT;
+    cmd[1] = zone;
+    cmd[2] = val;
+
+    radio.stopListening();
+    radio.openWritingPipe(ADDR_RMT);
+    radio.write(cmd, sizeof(cmd));
+
+    radio.openReadingPipe(1, ADDR_BASE);
+    radio.startListening();
+
+    // Serial.print("Send: ");
+    // Serial.print(cmd[0]);
+    // Serial.print(' ');
+    // Serial.print(cmd[1]);
+    // Serial.print(' ');
+    // Serial.println(cmd[2]);
 }
 
 void checkIncomingData() {
@@ -110,13 +128,14 @@ void parseIncCmd(int zone, int val) {
     Serial.print(" ; val - ");
     Serial.println(val);
 
-    if (zone == 1) {
-        Serial.println(main_security);
+    if (zone == 1) { // охрана
+        // Serial.println(main_security);
         main_security = !main_security;
         if (main_security == 1) {
             digitalWrite(LED_PIN, HIGH);
         } else {
             digitalWrite(LED_PIN, LOW);
         }
+        sendMessage(1, main_security);
     }
 }

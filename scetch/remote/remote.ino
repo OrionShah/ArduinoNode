@@ -104,24 +104,38 @@ void sendMessage (int zone, int val) {
 
 
 void checkIncomingData() {
+    int cmd[3];
     if (radio.available()) {
+        radio.read(cmd, sizeof(cmd));
+        delay(100);
+        // Serial.print("REC: ");
+        // Serial.print(cmd[0]);
+        // Serial.print(' ');
+        // Serial.print(cmd[1]);
+        // Serial.print(' ');
+        // Serial.println(cmd[2]);
 
+        if (cmd[0] == CHK_INT) {
+            parseIncCmd(cmd[1], cmd[2]);
+        }
     }
-
-    //Serial.println("Checking...");
-    //BASE_MSG receivedData;
-    //uint8_t msgSize = sizeof(receivedData);
-    //if (vw_get_message((uint8_t *)&receivedData, &msgSize)) {
-    //    parseIncCmd(receivedData.cmd);
-
-        //digitalWrite(LED_PIN, receivedData.cmd);
-        //sendMessage(!receivedData.cmd);
-    //}
 }
 
-void parseIncCmd(int cmd) {
-    Serial.print("CMD: ");
-    Serial.println(cmd);
+void parseIncCmd(int zone, int val) {
+    Serial.print("CMD: zone - ");
+    Serial.print(zone);
+    Serial.print(" ; val - ");
+    Serial.println(val);
+
+    if (zone == 1) { // охрана
+        // Serial.println(main_security);
+        main_security = val;
+        if (main_security == 1) {
+            digitalWrite(LED_PIN, HIGH);
+        } else {
+            digitalWrite(LED_PIN, LOW);
+        }
+    }
 }
 
 void checkButtons() {
@@ -136,7 +150,7 @@ void checkButtons() {
             
             sendMessage(1, !main_security);
             main_security = !main_security;
-            digitalWrite(LED_PIN, main_security);
+            //digitalWrite(LED_PIN, main_security);
         }
     }
 
