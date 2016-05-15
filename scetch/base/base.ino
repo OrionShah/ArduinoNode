@@ -35,6 +35,9 @@ void setup() {
     pinMode(LED_PIN,OUTPUT);
     pinMode(ONE_DOOR_PIN, INPUT);
 
+    pinMode(12, INPUT);
+    pinMode(13, INPUT);
+
     radio.begin();
     radio.setChannel(7);
     radio.setRetries(15,15);
@@ -65,8 +68,14 @@ void setup() {
 }
 
 void loop() {
+    int f = digitalRead(13);
+    int s = digitalRead(12);
+    Serial.print("F: ");
+    Serial.print(f);
+    Serial.print(" S: ");
+    Serial.println(s);
     checkIncomingData();
-    checkCar();
+//    checkCar();
     delay(20);
 }
 
